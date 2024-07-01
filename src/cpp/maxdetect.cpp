@@ -27,9 +27,9 @@
 // #include <stdlib.h>
 // #include <unistd.h>
 
-#include <wiringPi.h>
+#include "../include/wiringPi.h"
 
-#include "maxdetect.h"
+#include "../include/maxdetect.h"
 
 #ifndef TRUE
 #    define TRUE  (1 == 1)
