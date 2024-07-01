@@ -36,6 +36,8 @@
 #include "../include/drcNetCmd.h"
 #include "../include/wiringPi.h"
 
+#include <Mlib/def.h>
+
 /*
  * remoteReadline:
  *	Read in a line of data from the remote server, ending with a newline
@@ -43,9 +45,8 @@
  *	any sort of failure.
  *********************************************************************************
  */
-
-static int
-remoteReadline(int fd, char *buf, int max)
+static s32
+remoteReadline(s32 fd, s8 *buf, s32 max)
 {
     int  len = 0;
     char c;
@@ -76,9 +77,8 @@ remoteReadline(int fd, char *buf, int max)
  *	as the challenge. This line contains the password salt.
  *********************************************************************************
  */
-
-static char *
-getChallenge(int fd)
+static s8 *
+getChallenge(s32 fd)
 {
     static char buf[512];
     int         num;
@@ -106,9 +106,8 @@ getChallenge(int fd)
  *	The server will simply disconnect on a bad response. No 3 chances here.
  *********************************************************************************
  */
-
-static int
-authenticate(int fd, const char *pass)
+static s32
+authenticate(s32 fd, C_s8 *pass)
 {
     char *challenge;
     char *encrypted;
@@ -150,9 +149,8 @@ authenticate(int fd, const char *pass)
  *	the password.
  *********************************************************************************
  */
-
 int
-_drcSetupNet(const char *ipAddress, const char *port, const char *password)
+_drcSetupNet(C_s8 *ipAddress, C_s8 *port, C_s8 *password)
 {
     struct addrinfo  hints;
     struct addrinfo *result, *rp;
@@ -224,7 +222,6 @@ _drcSetupNet(const char *ipAddress, const char *port, const char *password)
  *	Change the pin mode on the remote DRC device
  *********************************************************************************
  */
-
 static void
 myPinMode(struct wiringPiNodeStruct *node, int pin, int mode)
 {
@@ -242,7 +239,6 @@ myPinMode(struct wiringPiNodeStruct *node, int pin, int mode)
  * myPullUpDnControl:
  *********************************************************************************
  */
-
 static void
 myPullUpDnControl(struct wiringPiNodeStruct *node, int pin, int mode)
 {
@@ -260,7 +256,6 @@ myPullUpDnControl(struct wiringPiNodeStruct *node, int pin, int mode)
  * myDigitalWrite:
  *********************************************************************************
  */
-
 static void
 myDigitalWrite(struct wiringPiNodeStruct *node, int pin, int value)
 {
@@ -295,7 +290,6 @@ static void myDigitalWrite8 (struct wiringPiNodeStruct *node, int pin, int value
  * myAnalogWrite:
  *********************************************************************************
  */
-
 static void
 myAnalogWrite(struct wiringPiNodeStruct *node, int pin, int value)
 {
@@ -313,7 +307,6 @@ myAnalogWrite(struct wiringPiNodeStruct *node, int pin, int value)
  * myPwmWrite:
  *********************************************************************************
  */
-
 static void
 myPwmWrite(struct wiringPiNodeStruct *node, int pin, int value)
 {
@@ -331,7 +324,6 @@ myPwmWrite(struct wiringPiNodeStruct *node, int pin, int value)
  * myAnalogRead:
  *********************************************************************************
  */
-
 static int
 myAnalogRead(struct wiringPiNodeStruct *node, int pin)
 {
@@ -353,7 +345,7 @@ myAnalogRead(struct wiringPiNodeStruct *node, int pin)
  */
 
 static int
-myDigitalRead(struct wiringPiNodeStruct *node, int pin)
+myDigitalRead(wiringPiNodeStruct *node, int pin)
 {
     struct drcNetComStruct cmd;
 
@@ -392,7 +384,6 @@ static unsigned int myDigitalRead8 (struct wiringPiNodeStruct *node, int pin)
  *	Could be a variable nunber of pins here - we might not know in advance.
  *********************************************************************************
  */
-
 int
 drcSetupNet(const int pinBase, const int numPins, const char *ipAddress, const char *port, const char *password)
 {

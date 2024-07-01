@@ -68,7 +68,6 @@ static union
  *	Returns a pointer to a static string containing the clients IP address
  *********************************************************************************
  */
-
 char *
 getClientIP(void)
 {
@@ -114,7 +113,6 @@ getClientIP(void)
  *	Print over a network socket
  *********************************************************************************
  */
-
 static int
 clientPstr(int fd, char *s)
 {
@@ -140,7 +138,6 @@ clientPrintf(const int fd, const char *message, ...)
  *	Send some text to the client device
  *********************************************************************************
  */
-
 int
 sendGreeting(int clientFd)
 {
@@ -152,12 +149,14 @@ sendGreeting(int clientFd)
     return clientPrintf(clientFd, "200 Connecting from: %s\n", getClientIP());
 }
 
+//
 /*
- * getSalt:
- *	Create a random 'salt' value for the password encryption process
+    getSalt:
+
+        Create a random 'salt' value for the password encryption process
+
  *********************************************************************************
  */
-
 static int
 getSalt(char drySalt[])
 {
@@ -195,7 +194,6 @@ getSalt(char drySalt[])
  *	Create and send our salt (aka nonce) to the remote device
  *********************************************************************************
  */
-
 int
 sendChallenge(int clientFd)
 {
@@ -212,7 +210,6 @@ sendChallenge(int clientFd)
  *	Read the encrypted password from the remote device.
  *********************************************************************************
  */
-
 int
 getResponse(int clientFd)
 {
@@ -252,7 +249,6 @@ getResponse(int clientFd)
  *	See if there's a match. If not, we simply dump them.
  *********************************************************************************
  */
-
 int
 passwordMatch(const char *password)
 {
@@ -275,16 +271,16 @@ passwordMatch(const char *password)
  *	on both IPv4 and IPv6 interfaces.
  *********************************************************************************
  */
-
 int
 setupServer(int serverPort)
 {
     socklen_t clientSockAddrSize = sizeof(clientSockAddr);
 
-    int       on = 1;
-    int       family;
+    int on = 1;
+    int family;
+    int clientFd;
+
     socklen_t serverSockAddrSize;
-    int       clientFd;
 
     // Try to create an IPv6 socket
 
@@ -296,6 +292,7 @@ setupServer(int serverPort)
     {
         if ((serverFd = socket(PF_INET, SOCK_STREAM, 0)) < 0)
         {
+            perror("socket");
             return -1;
         }
 
@@ -310,6 +307,7 @@ setupServer(int serverPort)
 
     if (setsockopt(serverFd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
     {
+        perror("setsockopt");
         return -1;
     }
 
@@ -334,16 +332,19 @@ setupServer(int serverPort)
 
     if (bind(serverFd, (struct sockaddr *)&serverSockAddr, serverSockAddrSize) < 0)
     {
+        perror("bind");
         return -1;
     }
 
     if (listen(serverFd, 4) < 0) // Really only going to talk to one client at a time...
     {
+        perror("listen");
         return -1;
     }
 
     if ((clientFd = accept(serverFd, (struct sockaddr *)&clientSockAddr, &clientSockAddrSize)) < 0)
     {
+        perror("accept");
         return -1;
     }
 
