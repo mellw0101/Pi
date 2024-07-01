@@ -402,15 +402,17 @@ static int       isrMode[64];
 //	Yes, it's probably more innefficient than all the bit-twidling, but it
 //	does tend to make it all a bit clearer. At least to me!
 
-// pinToGpio:
-//	Take a Wiring pin (0 through X) and re-map it to the BCM_GPIO pin
+//
+//  Take a Wiring pin (0 through X),
+//  and re-map it to the BCM_GPIO pin.
 //	Cope for 3 different board revisions here.
+//
+static s32 *pinToGpio;
 
-static int *pinToGpio;
-
-// Revision 1, 1.1:
-
-static int pinToGpioR1[64] = {
+//
+//  Revision 1, 1.1:
+//
+static s32 pinToGpioR1[64] = {
     17, 18, 21, 22, 23, 24, 25, 4, // From the Original Wiki - GPIO 0 through 7:	wpi  0 -  7
     0, 1,                          // I2C  - SDA1, SCL1				wpi  8 -  9
     8, 7,                          // SPI  - CE1, CE0				wpi 10 - 11
@@ -424,9 +426,10 @@ static int pinToGpioR1[64] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // ... 63
 };
 
-// Revision 2:
-
-static int pinToGpioR2[64] = {
+//
+//  Revision 2:
+//
+static s32 pinToGpioR2[64] = {
     17, 18, 27, 22, 23, 24, 25, 4, // From the Original Wiki - GPIO 0 through 7:	wpi  0 -  7
     2, 3,                          // I2C  - SDA0, SCL0				wpi  8 -  9
     8, 7,                          // SPI  - CE1, CE0				wpi 10 - 11
@@ -443,14 +446,15 @@ static int pinToGpioR2[64] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // ... 63
 };
 
-// physToGpio:
-//	Take a physical pin (1 through 26) and re-map it to the BCM_GPIO pin
-//	Cope for 2 different board revisions here.
-//	Also add in the P5 connector, so the P5 pins are 3,4,5,6, so 53,54,55,56
+//
+//  physToGpio:
+//	 Take a physical pin (1 through 26) and re-map it to the BCM_GPIO pin
+//	 Cope for 2 different board revisions here.
+//	 Also add in the P5 connector, so the P5 pins are 3,4,5,6, so 53,54,55,56
+//
+static s32 *physToGpio;
 
-static int *physToGpio;
-
-static int physToGpioR1[64] = {
+static s32 physToGpioR1[64] = {
     -1,                                                                                          // 0
     -1, -1,                                                                                      // 1, 2
     0,  -1, 1,  -1, 4,  14, -1, 15, 17, 18, 21, -1, 22, 23, -1, 24, 10, -1, 9, 25, 11, 8, -1, 7, // 25, 26
@@ -460,7 +464,7 @@ static int physToGpioR1[64] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,                              // ... 63
 };
 
-static int physToGpioR2[64] = {
+static s32 physToGpioR2[64] = {
     -1, // 0
     -1,
     -1, // 1, 2
@@ -532,18 +536,21 @@ static int physToGpioR2[64] = {
     -1,
 };
 
-int
+s32
 piBoard()
 {
     if (RaspberryPiModel < 0)
-    { // need to detect pi model
-        int model, rev, mem, maker, overVolted;
+    {
+        //
+        //  Need to detect pi model.
+        //
+        s32 model, rev, mem, maker, overVolted;
         piBoardId(&model, &rev, &mem, &maker, &overVolted);
     }
     return RaspberryPiModel < 0 ? 0 : 1;
 }
 
-int
+s32
 GetMaxPin()
 {
     return PI_MODEL_5 == RaspberryPiModel ? 27 : 63;
@@ -557,7 +564,7 @@ GetMaxPin()
         return;                                        \
     }
 
-int
+s32
 FailOnModel5()
 {
     if (PI_MODEL_5 == RaspberryPiModel)
@@ -569,44 +576,49 @@ FailOnModel5()
     return 0;
 }
 
-// gpioToGPFSEL:
-//	Map a BCM_GPIO pin to it's Function Selection
-//	control port. (GPFSEL 0-5)
-//	Groups of 10 - 3 bits per Function - 30 bits per port
-
+//
+//  gpioToGPFSEL:
+//	 Map a BCM_GPIO pin to it's Function Selection
+//	 control port. (GPFSEL 0-5)
+//	 Groups of 10 - 3 bits per Function - 30 bits per port.
+//
 static uint8_t gpioToGPFSEL[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
 };
 
-// gpioToShift
-//	Define the shift up for the 3 bits per pin in each GPFSEL port
-
+//
+//  gpioToShift
+//	 Define the shift up for the 3 bits per pin in each GPFSEL port.
+//
 static uint8_t gpioToShift[] = {
     0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 0, 3, 6, 9, 12, 15, 18, 21, 24, 27,
     0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 0, 3, 6, 9, 12, 15, 18, 21, 24, 27,
 };
 
-// gpioToGPSET:
-//	(Word) offset to the GPIO Set registers for each GPIO pin
-
+//
+//  gpioToGPSET:
+//	 (Word) offset to the GPIO Set registers for each GPIO pin
+//
 static uint8_t gpioToGPSET[] = {
     7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
     8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
 };
 
-// gpioToGPCLR:
-//	(Word) offset to the GPIO Clear registers for each GPIO pin
-
+//
+//  gpioToGPCLR:
+//	 (Word) offset to the GPIO Clear registers for each GPIO pin
+//
 static uint8_t gpioToGPCLR[] = {
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
     10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
 };
 
-// gpioToGPLEV:
-//	(Word) offset to the GPIO Input level registers for each GPIO pin
-
+//
+//  gpioToGPLEV:
+//	 (Word) offset to the GPIO Input level registers for each GPIO pin
+//
 static uint8_t gpioToGPLEV[] = {
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
@@ -614,27 +626,30 @@ static uint8_t gpioToGPLEV[] = {
 };
 
 #ifdef notYetReady
-// gpioToEDS
-//	(Word) offset to the Event Detect Status
-
+//
+//  gpioToEDS
+//	 (Word) offset to the Event Detect Status
+//
 static uint8_t gpioToEDS[] = {
     16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
     16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
 };
 
-// gpioToREN
-//	(Word) offset to the Rising edge ENable register
-
+//
+//  gpioToREN
+//	 (Word) offset to the Rising edge ENable register
+//
 static uint8_t gpioToREN[] = {
     19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
     19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
 };
 
-// gpioToFEN
-//	(Word) offset to the Falling edgde ENable register
-
+//
+//  gpioToFEN
+//	 (Word) offset to the Falling edgde ENable register
+//
 static uint8_t gpioToFEN[] = {
     22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
     22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
@@ -642,32 +657,37 @@ static uint8_t gpioToFEN[] = {
 };
 #endif
 
-// GPPUD:
-//	GPIO Pin pull up/down register
-
+//
+//  GPPUD:
+//	 GPIO Pin pull up/down register
+//
 #define GPPUD     37
 
-/* 2711 has a different mechanism for pin pull-up/down/enable  */
-#define GPPUPPDN0 57 /* Pin pull-up/down for pins 15:0  */
-#define GPPUPPDN1 58 /* Pin pull-up/down for pins 31:16 */
-#define GPPUPPDN2 59 /* Pin pull-up/down for pins 47:32 */
-#define GPPUPPDN3 60 /* Pin pull-up/down for pins 57:48 */
+//
+//  2711 has a different mechanism for pin 'pull-up/down/enable'.
+//
+#define GPPUPPDN0 57 //  Pin 'pull-up/down' for pins '15:0'
+#define GPPUPPDN1 58 //  Pin 'pull-up/down' for pins '31:16'
+#define GPPUPPDN2 59 //  Pin 'pull-up/down' for pins '47:32'
+#define GPPUPPDN3 60 //  Pin 'pull-up/down' for pins '57:48'
 
-static volatile unsigned int piGpioPupOffset = 0;
+static volatile u32 piGpioPupOffset = 0;
 
-// gpioToPUDCLK
-//	(Word) offset to the Pull Up Down Clock regsiter
-
-static uint8_t gpioToPUDCLK[] = {
+//
+//  gpioToPUDCLK
+//	 (Word) offset to the Pull Up Down Clock regsiter
+//
+static u8 gpioToPUDCLK[] = {
     38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38,
     38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
     39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39,
 };
 
-// gpioToPwmALT
-//	the ALT value to put a GPIO pin into PWM mode
-
-static uint8_t gpioToPwmALT[] = {
+//
+//  gpioToPwmALT
+//	 the ALT value to put a GPIO pin into PWM mode
+//
+static u8 gpioToPwmALT[] = {
     0,         0,         0,         0,         0,         0,         0, 0, //  0 ->  7
     0,         0,         0,         0,         FSEL_ALT0, FSEL_ALT0, 0, 0, //  8 -> 15
     0,         0,         FSEL_ALT5, FSEL_ALT5, 0,         0,         0, 0, // 16 -> 23
@@ -678,10 +698,11 @@ static uint8_t gpioToPwmALT[] = {
     0,         0,         0,         0,         0,         0,         0, 0, // 56 -> 63
 };
 
-// gpioToPwmPort
-//	The port value to put a GPIO pin into PWM mode
-
-static uint8_t gpioToPwmPort[] = {
+//
+//  gpioToPwmPort
+//	 The port value to put a GPIO pin into PWM mode
+//
+static u8 gpioToPwmPort[] = {
     0,         0,         0,         0,         0,         0,         0, 0, //  0 ->  7
     0,         0,         0,         0,         PWM0_DATA, PWM1_DATA, 0, 0, //  8 -> 15
     0,         0,         PWM0_DATA, PWM1_DATA, 0,         0,         0, 0, // 16 -> 23
@@ -693,17 +714,20 @@ static uint8_t gpioToPwmPort[] = {
 
 };
 
-// gpioToGpClkALT:
-//	ALT value to put a GPIO pin into GP Clock mode.
-//	On the Pi we can really only use BCM_GPIO_4 and BCM_GPIO_21
-//	for clocks 0 and 1 respectively, however I'll include the full
-//	list for completeness - maybe one day...
+//
+//  gpioToGpClkALT:
+//	 ALT value to put a GPIO pin into GP Clock mode.
+//	 On the Pi we can really only use BCM_GPIO_4 and BCM_GPIO_21
+//	 for clocks 0 and 1 respectively, however I'll include the full
+//	 list for completeness - maybe one day...
+//
 
 #define GPIO_CLOCK_SOURCE 1
 
-// gpioToGpClkALT0:
-
-static uint8_t gpioToGpClkALT0[] = {
+//
+//  gpioToGpClkALT0:
+//
+static u8 gpioToGpClkALT0[] = {
     0,         0, 0,         0,         FSEL_ALT0, FSEL_ALT0, FSEL_ALT0, 0, //  0 ->  7
     0,         0, 0,         0,         0,         0,         0,         0, //  8 -> 15
     0,         0, 0,         0,         FSEL_ALT5, FSEL_ALT5, 0,         0, // 16 -> 23
@@ -714,10 +738,11 @@ static uint8_t gpioToGpClkALT0[] = {
     0,         0, 0,         0,         0,         0,         0,         0, // 56 -> 63
 };
 
-// gpioToClk:
-//	(word) Offsets to the clock Control and Divisor register
-
-static uint8_t gpioToClkCon[] = {
+//
+//  gpioToClk:
+//	 (word) Offsets to the clock Control and Divisor register
+//
+static u8 gpioToClkCon[] = {
     static_cast<uint8_t>(-1),
     static_cast<uint8_t>(-1),
     static_cast<uint8_t>(-1),
@@ -784,7 +809,7 @@ static uint8_t gpioToClkCon[] = {
     static_cast<uint8_t>(-1), // 56 -> 63
 };
 
-static uint8_t gpioToClkDiv[] = {
+static u8 gpioToClkDiv[] = {
     static_cast<uint8_t>(-1),
     static_cast<uint8_t>(-1),
     static_cast<uint8_t>(-1),
@@ -856,17 +881,18 @@ static uint8_t gpioToClkDiv[] = {
  *********************************************************************************
  */
 
+//
 /*
  * wiringPiFailure:
  *	Fail. Or not.
  *********************************************************************************
  */
-
-int
-wiringPiFailure(int fatal, const char *message, ...)
+s32
+wiringPiFailure(s32 fatal, C_s8 *message, ...)
 {
     va_list argp;
-    char    buffer[1024];
+
+    s8 buffer[1024];
 
     if (!fatal && wiringPiReturnCodes)
     {
@@ -883,15 +909,15 @@ wiringPiFailure(int fatal, const char *message, ...)
     return 0;
 }
 
-/*
- * setupCheck
- *	Another sanity check because some users forget to call the setup
- *	function. Mosty because they need feeding C drip by drip )-:
- *********************************************************************************
- */
-
+//
+//  setupCheck:
+// 	- Another sanity check because some users forget to call the setup function.
+//  - Mosty because they need feeding C drip by drip )-:
+//
+//  *******************************************************************************
+//
 static void
-setupCheck(const char *fName)
+setupCheck(C_s8 *fName)
 {
     if (!wiringPiSetuped)
     {
@@ -903,15 +929,15 @@ setupCheck(const char *fName)
     }
 }
 
+//
 /*
  * gpioMemCheck:
  *	See if we're using the /dev/gpiomem interface, if-so then some operations
  *	can't be done and will crash the Pi.
  *********************************************************************************
  */
-
 static void
-usingGpioMemCheck(const char *what)
+usingGpioMemCheck(C_s8 *what)
 {
     if (usingGpioMem)
     {
@@ -940,7 +966,7 @@ PrintSystemStdErr()
 }
 
 void
-piFunctionOops(const char *function, const char *suggestion, const char *url)
+piFunctionOops(C_s8 *function, C_s8 *suggestion, C_s8 *url)
 {
     fprintf(stderr, "Oops: Function %s is not supported\n", function);
     PrintSystemStdErr();
@@ -957,12 +983,13 @@ piFunctionOops(const char *function, const char *suggestion, const char *url)
 }
 
 void
-ReportDeviceError(const char *function, int pin, const char *mode, int ret)
+ReportDeviceError(C_s8 *function, s32 pin, C_s8 *mode, s32 ret)
 {
     fprintf(stderr, "wiringPi: ERROR: ioctl %s of %d (%s) returned error '%s' (%d)\n", function, pin, mode,
             strerror(errno), ret);
 }
 
+//
 /*
  * piGpioLayout:
  *	Return a number representing the hardware revision of the board.
@@ -987,10 +1014,10 @@ ReportDeviceError(const char *function, int pin, const char *mode, int ret)
  *
  *********************************************************************************
  */
-const char *revfile = "/proc/device-tree/system/linux,revision";
-
+constexpr C_s8 *revfile = "/proc/device-tree/system/linux,revision";
+//
 void
-piGpioLayoutOops(const char *why)
+piGpioLayoutOops(C_s8 *why)
 {
     fprintf(stderr, "Oops: Unable to determine Raspberry Pi board revision from %s and from /proc/cpuinfo\n", revfile);
     PrintSystemStdErr();
@@ -1000,41 +1027,43 @@ piGpioLayoutOops(const char *why)
     exit(EXIT_FAILURE);
 }
 
-int
-piGpioLayout(void)
+s32
+piGpioLayout()
 {
     piBoard();
     return RaspberryPiLayout;
 }
 
+//
 /*
  * piBoardRev:
  *	Deprecated, but does the same as piGpioLayout
  *********************************************************************************
  */
-
-int
-piBoardRev(void)
+s32
+piBoardRev()
 {
     return piGpioLayout();
 }
 
-const char *
-GetPiRevision(char *line, int linelength, unsigned int *revision)
+C_s8 *
+GetPiRevision(s8 *line, s32 linelength, u32 *revision)
 {
-
-    const char *c        = NULL;
-    uint32_t    Revision = 0;
+    C_s8 *c        = NULL;
+    u32   Revision = 0;
     _Static_assert(sizeof(Revision) == 4, "should be unsigend integer with 4 byte size");
 
     FILE *fp = fopen(revfile, "rb");
+    //
+    //  Revision file not found or no access.
+    //
     if (!fp)
     {
         if (wiringPiDebug)
         {
             perror(revfile);
         }
-        return NULL; // revision file not found or no access
+        return NULL;
     }
     int result = fread(&Revision, sizeof(Revision), 1, fp);
     fclose(fp);
@@ -1057,6 +1086,7 @@ GetPiRevision(char *line, int linelength, unsigned int *revision)
     return c;
 }
 
+//
 /*
  * piBoardId:
  *	Return the real details of the board we have.
@@ -1123,22 +1153,27 @@ GetPiRevision(char *line, int linelength, unsigned int *revision)
  *   REV          00: 0=REV0 1=REV1 2=REV2
  *********************************************************************************
  */
-
 void
-piBoardId(int *model, int *rev, int *mem, int *maker, int *warranty)
+piBoardId(s32 *model, s32 *rev, s32 *mem, s32 *maker, s32 *warranty)
 {
-    const int    maxlength = 120;
-    char         line[maxlength + 1];
-    const char  *c;
-    unsigned int revision = 0x00;
-    int          bRev, bType, bProc, bMfg, bMem, bWarranty;
+    C_s32 maxlength = 120;
+    s8    line[maxlength + 1];
+    C_s8 *c;
+    u32   revision = 0x00;
+    s32   bRev, bType, bProc, bMfg, bMem, bWarranty;
 
     // piGpioLayoutOops ("this is only a test case");
 
-    c = GetPiRevision(line, maxlength, &revision);           // device tree
+    //
+    //  Device tree.
+    //
+    c = GetPiRevision(line, maxlength, &revision);
     if (NULL == c)
     {
-        c = GetPiRevisionLegacy(line, maxlength, &revision); // proc/cpuinfo
+        //
+        //  proc/cpuinfo
+        //
+        c = GetPiRevisionLegacy(line, maxlength, &revision);
     }
     if (NULL == c)
     {
@@ -1418,39 +1453,40 @@ piBoardId(int *model, int *rev, int *mem, int *maker, int *warranty)
     }
 }
 
+//
 /*
  * wpiPinToGpio:
  *	Translate a wiringPi Pin number to native GPIO pin number.
  *	Provided for external support.
  *********************************************************************************
  */
-
-int
-wpiPinToGpio(int wpiPin)
+s32
+wpiPinToGpio(s32 wpiPin)
 {
     return pinToGpio[wpiPin & 63];
 }
 
+//
 /*
  * physPinToGpio:
  *	Translate a physical Pin number to native GPIO pin number.
  *	Provided for external support.
  *********************************************************************************
  */
-
-int
-physPinToGpio(int physPin)
+s32
+physPinToGpio(s32 physPin)
 {
     return physToGpio[physPin & 63];
 }
 
+//
 /*
  * setPadDrive:
  *	Set the PAD driver value
  *********************************************************************************
  */
 void
-setPadDrivePin(int pin, int value)
+setPadDrivePin(s32 pin, s32 value)
 {
     if (PI_MODEL_5 != RaspberryPiModel)
     {
@@ -1472,7 +1508,7 @@ setPadDrivePin(int pin, int value)
 }
 
 void
-setPadDrive(int group, int value)
+setPadDrive(s32 group, s32 value)
 {
     uint32_t wrVal, rdVal;
 
@@ -1550,15 +1586,15 @@ setPadDrive(int group, int value)
     }
 }
 
+//
 /*
  * getAlt:
  *	Returns the ALT bits for a given port. Only really of-use
  *	for the gpio readall command (I think)
  *********************************************************************************
  */
-
-int
-getAlt(int pin)
+s32
+getAlt(s32 pin)
 {
     int fSel, shift, alt;
 
@@ -1636,20 +1672,20 @@ getAlt(int pin)
     return alt;
 }
 
-enum WPIPinAlt
-getPinModeAlt(int pin)
+WPIPinAlt
+getPinModeAlt(s32 pin)
 {
     return (enum WPIPinAlt)getAlt(pin);
 }
 
+//
 /*
  * pwmSetMode:
  *	Select the native "balanced" mode, or standard mark:space mode
  *********************************************************************************
  */
-
 void
-pwmSetMode(int mode)
+pwmSetMode(s32 mode)
 {
     if ((wiringPiMode == WPI_MODE_PINS) || (wiringPiMode == WPI_MODE_PHYS) || (wiringPiMode == WPI_MODE_GPIO))
     {
@@ -1665,15 +1701,15 @@ pwmSetMode(int mode)
     }
 }
 
+//
 /*
  * pwmSetRange:
  *	Set the PWM range register. We set both range registers to the same
  *	value. If you want different in your own code, then write your own.
  *********************************************************************************
  */
-
 void
-pwmSetRange(unsigned int range)
+pwmSetRange(u32 range)
 {
     FailOnModel5();
     if ((wiringPiMode == WPI_MODE_PINS) || (wiringPiMode == WPI_MODE_PHYS) || (wiringPiMode == WPI_MODE_GPIO))
@@ -1685,6 +1721,7 @@ pwmSetRange(unsigned int range)
     }
 }
 
+//
 /*
  * pwmSetClock:
  *	Set/Change the PWM clock. Originally my code, but changed
@@ -1692,9 +1729,8 @@ pwmSetRange(unsigned int range)
  *	after further study of the manual and testing with a 'scope
  *********************************************************************************
  */
-
 void
-pwmSetClock(int divisor)
+pwmSetClock(s32 divisor)
 {
     uint32_t pwm_control;
 
@@ -1745,14 +1781,14 @@ pwmSetClock(int divisor)
     }
 }
 
+//
 /*
  * gpioClockSet:
  *	Set the frequency on a GPIO clock pin
  *********************************************************************************
  */
-
 void
-gpioClockSet(int pin, int freq)
+gpioClockSet(s32 pin, s32 freq)
 {
     int divi, divr, divf;
 
@@ -1789,14 +1825,14 @@ gpioClockSet(int pin, int freq)
     *(clk + gpioToClkCon[pin]) = BCM_PASSWORD | 0x10 | GPIO_CLOCK_SOURCE; // Start Clock
 }
 
+//
 /*
  * wiringPiFindNode:
  *      Locate our device node
  *********************************************************************************
  */
-
-struct wiringPiNodeStruct *
-wiringPiFindNode(int pin)
+wiringPiNodeStruct *
+wiringPiFindNode(s32 pin)
 {
     struct wiringPiNodeStruct *node = wiringPiNodes;
 
@@ -1815,19 +1851,19 @@ wiringPiFindNode(int pin)
     return NULL;
 }
 
+//
 /*
  * wiringPiNewNode:
  *	Create a new GPIO node into the wiringPi handling system
  *********************************************************************************
  */
-
 static void
-pinModeDummy(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int mode)
+pinModeDummy(UNUSED wiringPiNodeStruct *node, UNUSED s32 pin, UNUSED s32 mode)
 {
     return;
 }
 static void
-pullUpDnControlDummy(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int pud)
+pullUpDnControlDummy(UNUSED wiringPiNodeStruct *node, UNUSED s32 pin, UNUSED s32 pud)
 {
     return;
 }
@@ -1835,33 +1871,33 @@ pullUpDnControlDummy(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int p
 // return 0 ; } static         void digitalWrite8Dummy       (UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int
 // value) { return ; }
 static int
-digitalReadDummy(UNU struct wiringPiNodeStruct *node, UNU int UNU pin)
+digitalReadDummy(UNUSED wiringPiNodeStruct *node, UNUSED int UNUSED pin)
 {
     return LOW;
 }
 static void
-digitalWriteDummy(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int value)
+digitalWriteDummy(UNUSED wiringPiNodeStruct *node, UNUSED s32 pin, UNUSED s32 value)
 {
     return;
 }
 static void
-pwmWriteDummy(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int value)
+pwmWriteDummy(UNUSED wiringPiNodeStruct *node, UNUSED s32 pin, UNUSED s32 value)
 {
     return;
 }
 static int
-analogReadDummy(UNU struct wiringPiNodeStruct *node, UNU int pin)
+analogReadDummy(UNUSED wiringPiNodeStruct *node, UNUSED s32 pin)
 {
     return 0;
 }
 static void
-analogWriteDummy(UNU struct wiringPiNodeStruct *node, UNU int pin, UNU int value)
+analogWriteDummy(UNUSED wiringPiNodeStruct *node, UNUSED s32 pin, UNUSED s32 value)
 {
     return;
 }
 
-struct wiringPiNodeStruct *
-wiringPiNewNode(int pinBase, int numPins)
+wiringPiNodeStruct *
+wiringPiNewNode(s32 pinBase, s32 numPins)
 {
     int                        pin;
     struct wiringPiNodeStruct *node;
@@ -1922,10 +1958,10 @@ pinEnableED01Pi(int pin)
 }
 #endif
 
-const char DEV_GPIO_PI[]  = "/dev/gpiochip0";
-const char DEV_GPIO_PI5[] = "/dev/gpiochip4";
+C_s8 DEV_GPIO_PI[]  = "/dev/gpiochip0";
+C_s8 DEV_GPIO_PI5[] = "/dev/gpiochip4";
 
-int
+s32
 wiringPiGpioDeviceGetFd()
 {
     if (chipFd < 0)
@@ -1946,7 +1982,7 @@ wiringPiGpioDeviceGetFd()
 }
 
 void
-releaseLine(int pin)
+releaseLine(s32 pin)
 {
 
     if (wiringPiDebug)
@@ -1958,8 +1994,8 @@ releaseLine(int pin)
     lineFds[pin] = -1;
 }
 
-int
-requestLine(int pin, unsigned int lineRequestFlags)
+s32
+requestLine(s32 pin, u32 lineRequestFlags)
 {
     struct gpiohandle_request rq;
 
@@ -2007,14 +2043,14 @@ requestLine(int pin, unsigned int lineRequestFlags)
  *********************************************************************************
  */
 
+//
 /*
  * pinModeAlt:
  *	This is an un-documented special to let you set any pin to any mode
  *********************************************************************************
  */
-
 void
-pinModeAlt(int pin, int mode)
+pinModeAlt(s32 pin, s32 mode)
 {
     int fSel, shift;
 
@@ -2060,15 +2096,17 @@ pinModeAlt(int pin, int mode)
     }
 }
 
+//
 /*
  * pinMode:
  *	Sets the mode of a pin to be input, output or PWM output
  *********************************************************************************
  */
-
+//
 // Default: rp1_set_pad(pin, 0, 1, 0, 1, 1, 1, 0);
+//
 void
-rp1_set_pad(int pin, int slewfast, int schmitt, int pulldown, int pullup, int drive, int inputenable, int outputdisable)
+rp1_set_pad(s32 pin, s32 slewfast, s32 schmitt, s32 pulldown, s32 pullup, s32 drive, s32 inputenable, s32 outputdisable)
 {
 
     pads[1 + pin] = (slewfast != 0) | ((schmitt != 0) << 1) | ((pulldown != 0) << 2) | ((pullup != 0) << 3) |
@@ -2076,7 +2114,7 @@ rp1_set_pad(int pin, int slewfast, int schmitt, int pulldown, int pullup, int dr
 }
 
 void
-pinModeFlagsDevice(int pin, int mode, unsigned int flags)
+pinModeFlagsDevice(s32 pin, s32 mode, u32 flags)
 {
     unsigned int lflag = flags;
     if (wiringPiDebug)
@@ -2106,13 +2144,13 @@ pinModeFlagsDevice(int pin, int mode, unsigned int flags)
 }
 
 void
-pinModeDevice(int pin, int mode)
+pinModeDevice(s32 pin, s32 mode)
 {
     pinModeFlagsDevice(pin, mode, lineFlags[pin]);
 }
 
 void
-pinMode(int pin, int mode)
+pinMode(s32 pin, s32 mode)
 {
     int                        fSel, shift, alt;
     struct wiringPiNodeStruct *node    = wiringPiNodes;
@@ -2256,35 +2294,49 @@ pinMode(int pin, int mode)
     }
 }
 
+//
 /*
  * pullUpDownCtrl:
  *	Control the internal pull-up/down resistors on a GPIO pin.
  *********************************************************************************
  */
 void
-pullUpDnControlDevice(int pin, int pud)
+pullUpDnControlDevice(s32 pin, s32 pud)
 {
-    unsigned int flag = lineFlags[pin];
-    unsigned int biasflags =
+    u32 flag = lineFlags[pin];
+    u32 biasflags =
         GPIOHANDLE_REQUEST_BIAS_DISABLE | GPIOHANDLE_REQUEST_BIAS_PULL_UP | GPIOHANDLE_REQUEST_BIAS_PULL_DOWN;
 
     flag &= ~biasflags;
     switch (pud)
     {
         case PUD_OFF :
+        {
             flag |= GPIOHANDLE_REQUEST_BIAS_DISABLE;
             break;
+        }
         case PUD_UP :
+        {
             flag |= GPIOHANDLE_REQUEST_BIAS_PULL_UP;
             break;
+        }
         case PUD_DOWN :
+        {
             flag |= GPIOHANDLE_REQUEST_BIAS_PULL_DOWN;
             break;
+        }
         default :
-            return; /* An illegal value */
+        {
+            //
+            //  An illegal value.
+            //
+            return;
+        }
     }
 
-    // reset input/output
+    //
+    //  Reset 'input/output'.
+    //
     if (lineFlags[pin] & GPIOHANDLE_REQUEST_OUTPUT)
     {
         pinModeFlagsDevice(pin, OUTPUT, flag);
@@ -2300,7 +2352,7 @@ pullUpDnControlDevice(int pin, int pud)
 }
 
 void
-pullUpDnControl(int pin, int pud)
+pullUpDnControl(s32 pin, s32 pud)
 {
     struct wiringPiNodeStruct *node = wiringPiNodes;
 
@@ -2402,39 +2454,50 @@ pullUpDnControl(int pin, int pud)
     }
 }
 
+//
 /*
  * digitalRead:
  *	Read the value of a given Pin, returning HIGH or LOW
  *********************************************************************************
  */
-
-int
-digitalReadDevice(int pin)
-{ // INPUT and OUTPUT should work
-
+//
+//  'INPUT' and 'OUTPUT' should work.
+//
+s32
+digitalReadDevice(s32 pin)
+{
     if (lineFds[pin] < 0)
     {
-        // line not requested - auto request on first read as input
+        //
+        //  line not requested - auto request on first read as input.
+        //
         pinModeDevice(pin, INPUT);
     }
     if (lineFds[pin] >= 0)
     {
-        struct gpiohandle_data data;
-        int                    ret = ioctl(lineFds[pin], GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
+        gpiohandle_data data;
+
+        s32 ret = ioctl(lineFds[pin], GPIOHANDLE_GET_LINE_VALUES_IOCTL, &data);
         if (ret)
         {
             ReportDeviceError("get line values", pin, "digitalRead", ret);
-            return LOW; // error
+            //
+            //  Error.
+            //
+            return LOW;
         }
         return data.values[0];
     }
-    return LOW; // error , need to request line before
+    //
+    //  Error, need to request line before.
+    //
+    return LOW;
 }
 
-int
-digitalRead(int pin)
+s32
+digitalRead(s32 pin)
 {
-    struct wiringPiNodeStruct *node = wiringPiNodes;
+    wiringPiNodeStruct *node = wiringPiNodes;
 
     if ((pin & PI_GPIO_MASK) == 0) // On-Board Pin
     {
@@ -2512,14 +2575,14 @@ unsigned int digitalRead8 (int pin)
 }
  */
 
+//
 /*
  * digitalWrite:
  *	Set an output bit
  *********************************************************************************
  */
-
 void
-digitalWriteDevice(int pin, int value)
+digitalWriteDevice(s32 pin, s32 value)
 {
 
     if (wiringPiDebug)
@@ -2555,7 +2618,7 @@ digitalWriteDevice(int pin, int value)
 }
 
 void
-digitalWrite(int pin, int value)
+digitalWrite(s32 pin, s32 value)
 {
     struct wiringPiNodeStruct *node = wiringPiNodes;
 
@@ -2638,16 +2701,16 @@ void digitalWrite8 (int pin, int value)
 }
  */
 
+//
 /*
  * pwmWrite:
  *	Set an output PWM value
  *********************************************************************************
  */
-
 void
-pwmWrite(int pin, int value)
+pwmWrite(s32 pin, s32 value)
 {
-    struct wiringPiNodeStruct *node = wiringPiNodes;
+    wiringPiNodeStruct *node = wiringPiNodes;
 
     FailOnModel5();
     setupCheck("pwmWrite");
@@ -2679,6 +2742,7 @@ pwmWrite(int pin, int value)
     }
 }
 
+//
 /*
  * analogRead:
  *	Read the analog value of a given Pin.
@@ -2686,9 +2750,8 @@ pwmWrite(int pin, int value)
  *	so this needs to go to a new node.
  *********************************************************************************
  */
-
-int
-analogRead(int pin)
+s32
+analogRead(s32 pin)
 {
     struct wiringPiNodeStruct *node = wiringPiNodes;
 
@@ -2702,6 +2765,7 @@ analogRead(int pin)
     }
 }
 
+//
 /*
  * analogWrite:
  *	Write the analog value to the given Pin.
@@ -2709,11 +2773,10 @@ analogRead(int pin)
  *	so this needs to go to a new node.
  *********************************************************************************
  */
-
 void
-analogWrite(int pin, int value)
+analogWrite(s32 pin, s32 value)
 {
-    struct wiringPiNodeStruct *node = wiringPiNodes;
+    wiringPiNodeStruct *node = wiringPiNodes;
 
     if ((node = wiringPiFindNode(pin)) == NULL)
     {
@@ -2723,15 +2786,15 @@ analogWrite(int pin, int value)
     node->analogWrite(node, pin, value);
 }
 
+//
 /*
  * pwmToneWrite:
  *	Pi Specific.
  *      Output the given frequency on the Pi's PWM pin
  *********************************************************************************
  */
-
 void
-pwmToneWrite(int pin, int freq)
+pwmToneWrite(s32 pin, s32 freq)
 {
     FailOnModel5();
 
@@ -2749,6 +2812,7 @@ pwmToneWrite(int pin, int freq)
     }
 }
 
+//
 /*
  * digitalWriteByte:
  * digitalReadByte:
@@ -2764,9 +2828,8 @@ pwmToneWrite(int pin, int freq)
  *	17, 18, 27, 23, 24, 24, 4 on a Pi v1 rev 3 onwards or B+, 2, 3, zero
  *********************************************************************************
  */
-
 void
-digitalWriteByte(const int value)
+digitalWriteByte(C_s32 value)
 {
     uint32_t pinSet = 0;
     uint32_t pinClr = 0;
@@ -2800,8 +2863,8 @@ digitalWriteByte(const int value)
     }
 }
 
-unsigned int
-digitalReadByte(void)
+u32
+digitalReadByte()
 {
     int      pin, x;
     uint32_t raw;
@@ -2825,6 +2888,7 @@ digitalReadByte(void)
     return data;
 }
 
+//
 /*
  * digitalWriteByte2:
  * digitalReadByte2:
@@ -2834,9 +2898,8 @@ digitalReadByte(void)
  *	However they overlap with the original read/write bytes.
  *********************************************************************************
  */
-
 void
-digitalWriteByte2(const int value)
+digitalWriteByte2(C_s32 value)
 {
     FailOnModel5();
 
@@ -2849,8 +2912,8 @@ digitalWriteByte2(const int value)
     }
 }
 
-unsigned int
-digitalReadByte2(void)
+u32
+digitalReadByte2()
 {
     uint32_t data = 0;
 
@@ -2866,6 +2929,7 @@ digitalReadByte2(void)
     return data;
 }
 
+//
 /*
  * waitForInterrupt:
  *	Pi Specific.
@@ -2875,13 +2939,13 @@ digitalReadByte2(void)
  *	way for a bit more efficiency.
  *********************************************************************************
  */
-
-int
-waitForInterrupt(int pin, int mS)
+s32
+waitForInterrupt(s32 pin, s32 mS)
 {
-    int                   fd, ret;
-    struct pollfd         polls;
-    struct gpioevent_data evdata;
+    s32 fd, ret;
+
+    pollfd         polls;
+    gpioevent_data evdata;
     // struct gpio_v2_line_request req2;
 
     if (wiringPiMode == WPI_MODE_PINS)
@@ -2934,8 +2998,8 @@ waitForInterrupt(int pin, int mS)
     return ret;
 }
 
-int
-waitForInterruptInit(int pin, int mode)
+s32
+waitForInterruptInit(s32 pin, s32 mode)
 {
     const char *strmode = "";
 
@@ -3009,8 +3073,8 @@ waitForInterruptInit(int pin, int mode)
     return 0;
 }
 
-int
-waitForInterruptClose(int pin)
+s32
+waitForInterruptClose(s32 pin)
 {
     if (isrFds[pin] > 0)
     {
@@ -3050,12 +3114,13 @@ waitForInterruptClose(int pin)
     return 0;
 }
 
-int
-wiringPiISRStop(int pin)
+s32
+wiringPiISRStop(s32 pin)
 {
     return waitForInterruptClose(pin);
 }
 
+//
 /*
  * interruptHandler:
  *	This is a thread and gets started to wait for the interrupt we're
@@ -3063,11 +3128,10 @@ wiringPiISRStop(int pin)
  *	fires.
  *********************************************************************************
  */
-
 static void *
-interruptHandler(UNU void *arg)
+interruptHandler(UNUSED void *arg)
 {
-    int pin;
+    s32 pin;
 
     (void)piHiPri(55); // Only effective if we run as root
 
@@ -3076,7 +3140,7 @@ interruptHandler(UNU void *arg)
 
     for (;;)
     {
-        int ret = waitForInterrupt(pin, -1);
+        s32 ret = waitForInterrupt(pin, -1);
         if (ret > 0)
         {
             if (wiringPiDebug)
@@ -3103,6 +3167,7 @@ interruptHandler(UNU void *arg)
     return NULL;
 }
 
+//
 /*
  * wiringPiISR:
  *	Pi Specific.
@@ -3110,9 +3175,8 @@ interruptHandler(UNU void *arg)
  *	back to the user supplied function.
  *********************************************************************************
  */
-
-int
-wiringPiISR(int pin, int mode, void (*function)(void))
+s32
+wiringPiISR(s32 pin, s32 mode, CFuncPtr function)
 {
     const int maxpin = GetMaxPin();
 
@@ -3185,15 +3249,15 @@ wiringPiISR(int pin, int mode, void (*function)(void))
     return 0;
 }
 
+//
 /*
  * initialiseEpoch:
  *	Initialise our start-of-time variable to be the current unix
  *	time in milliseconds and microseconds.
  *********************************************************************************
  */
-
 static void
-initialiseEpoch(void)
+initialiseEpoch()
 {
 #ifdef OLD_WAY
     struct timeval tv;
@@ -3210,14 +3274,14 @@ initialiseEpoch(void)
 #endif
 }
 
+//
 /*
  * delay:
  *	Wait for some number of milliseconds
  *********************************************************************************
  */
-
 void
-delay(unsigned int howLong)
+delay(u32 howLong)
 {
     struct timespec sleeper, dummy;
 
@@ -3227,6 +3291,7 @@ delay(unsigned int howLong)
     nanosleep(&sleeper, &dummy);
 }
 
+//
 /*
  * delayMicroseconds:
  *	This is somewhat intersting. It seems that on the Pi, a single call
@@ -3244,11 +3309,11 @@ delay(unsigned int howLong)
  *      to use gettimeofday () and poll on that instead...
  *********************************************************************************
  */
-
+//
 void
-delayMicrosecondsHard(unsigned int howLong)
+delayMicrosecondsHard(u32 howLong)
 {
-    struct timeval tNow, tLong, tEnd;
+    timeval tNow, tLong, tEnd;
 
     gettimeofday(&tNow, NULL);
     tLong.tv_sec  = howLong / 1000000;
@@ -3262,11 +3327,12 @@ delayMicrosecondsHard(unsigned int howLong)
 }
 
 void
-delayMicroseconds(unsigned int howLong)
+delayMicroseconds(u32 howLong)
 {
-    struct timespec sleeper;
-    unsigned int    uSecs = howLong % 1000000;
-    unsigned int    wSecs = howLong / 1000000;
+    timespec sleeper;
+
+    u32 uSecs = howLong % 1000000;
+    u32 wSecs = howLong / 1000000;
 
     if (howLong == 0)
     {
@@ -3284,17 +3350,17 @@ delayMicroseconds(unsigned int howLong)
     }
 }
 
+//
 /*
  * millis:
  *	Return a number of milliseconds as an unsigned int.
  *	Wraps at 49 days.
  *********************************************************************************
  */
-
-unsigned int
-millis(void)
+u32
+millis()
 {
-    uint64_t now;
+    u64 now;
 
 #ifdef OLD_WAY
     struct timeval tv;
@@ -3303,24 +3369,24 @@ millis(void)
     now = (uint64_t)tv.tv_sec * (uint64_t)1000 + (uint64_t)(tv.tv_usec / 1000);
 
 #else
-    struct timespec ts;
+    timespec ts;
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    now = (uint64_t)ts.tv_sec * (uint64_t)1000 + (uint64_t)(ts.tv_nsec / 1000000L);
+    now = (u64)ts.tv_sec * (u64)1000 + (u64)(ts.tv_nsec / 1000000L);
 #endif
 
-    return (uint32_t)(now - epochMilli);
+    return (u32)(now - epochMilli);
 }
 
+//
 /*
  * micros:
  *	Return a number of microseconds as an unsigned int.
  *	Wraps after 71 minutes.
  *********************************************************************************
  */
-
-unsigned int
-micros(void)
+u32
+micros()
 {
     uint64_t now;
 #ifdef OLD_WAY
@@ -3338,24 +3404,25 @@ micros(void)
     return (uint32_t)(now - epochMicro);
 }
 
+//
 /*
  * wiringPiVersion:
  *	Return our current version number
  *********************************************************************************
  */
-
 void
-wiringPiVersion(int *major, int *minor)
+wiringPiVersion(s32 *major, s32 *minor)
 {
     *major = VERSION_MAJOR;
     *minor = VERSION_MINOR;
 }
 
-int
-wiringPiUserLevelAccess(void)
+s32
+wiringPiUserLevelAccess()
 {
     struct stat statBuf;
-    const char *gpiomemModule = gpiomem_BCM;
+
+    C_s8 *gpiomemModule = gpiomem_BCM;
 
     piBoard();
     if (PI_MODEL_5 == RaspberryPiModel)
@@ -3366,8 +3433,8 @@ wiringPiUserLevelAccess(void)
     return stat(gpiomemModule, &statBuf) == 0 ? 1 : 0;
 }
 
-int
-wiringPiGlobalMemoryAccess(void)
+s32
+wiringPiGlobalMemoryAccess()
 {
     const char  *gpiomemGlobal;
     int          fd = -1;
@@ -3438,6 +3505,7 @@ wiringPiGlobalMemoryAccess(void)
     return 0; // Failed!
 }
 
+//
 /*
  * wiringPiSetup:
  *	Must be called once at the start of your program execution.
@@ -3448,9 +3516,8 @@ wiringPiGlobalMemoryAccess(void)
  * Changed now to revert to "gpio" mode if we're running on a Compute Module.
  *********************************************************************************
  */
-
-int
-wiringPiSetup(void)
+s32
+wiringPiSetup()
 {
     int fd;
     int model, rev, mem, maker, overVolted;
@@ -3670,6 +3737,7 @@ wiringPiSetup(void)
     return 0;
 }
 
+//
 /*
  * wiringPiSetupGpio:
  *	Must be called once at the start of your program execution.
@@ -3678,9 +3746,8 @@ wiringPiSetup(void)
  *	memory mapped hardware directly.
  *********************************************************************************
  */
-
-int
-wiringPiSetupGpio(void)
+s32
+wiringPiSetupGpio()
 {
     (void)wiringPiSetup();
 
@@ -3694,6 +3761,7 @@ wiringPiSetupGpio(void)
     return 0;
 }
 
+//
 /*
  * wiringPiSetupPhys:
  *	Must be called once at the start of your program execution.
@@ -3702,9 +3770,8 @@ wiringPiSetupGpio(void)
  *	memory mapped hardware directly.
  *********************************************************************************
  */
-
-int
-wiringPiSetupPhys(void)
+s32
+wiringPiSetupPhys()
 {
     (void)wiringPiSetup();
 
@@ -3718,8 +3785,8 @@ wiringPiSetupPhys(void)
     return 0;
 }
 
-int
-wiringPiSetupPinType(enum WPIPinType pinType)
+s32
+wiringPiSetupPinType(WPIPinType pinType)
 {
     if (wiringPiDebug)
     {
@@ -3738,8 +3805,8 @@ wiringPiSetupPinType(enum WPIPinType pinType)
     }
 }
 
-int
-wiringPiSetupGpioDevice(enum WPIPinType pinType)
+s32
+wiringPiSetupGpioDevice(WPIPinType pinType)
 {
     if (wiringPiSetuped)
     {
@@ -3797,6 +3864,7 @@ wiringPiSetupGpioDevice(enum WPIPinType pinType)
     return 0;
 }
 
+//
 /*
  * wiringPiSetupSys:
  * GPIO Sysfs Interface for Userspace is deprecated
@@ -3804,9 +3872,8 @@ wiringPiSetupGpioDevice(enum WPIPinType pinType)
  *
  * Switched to new GPIO driver Interface in version 3.3
  */
-
-int
-wiringPiSetupSys(void)
+s32
+wiringPiSetupSys()
 {
     if (wiringPiSetuped)
     {

@@ -280,7 +280,6 @@ serialDataAvail(const int fd)
  *	10 seconds.
  *********************************************************************************
  */
-
 int
 serialGetchar(const int fd)
 {
