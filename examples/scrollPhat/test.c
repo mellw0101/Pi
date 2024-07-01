@@ -22,94 +22,98 @@
  ***********************************************************************
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <string.h>
 
 #include <scrollPhat.h>
-
 
 /*
  * prompt:
  *	Simple prompt & wait
  *********************************************************************************
  */
-
-static void prompt (const char *p)
+static void
+prompt(const char *p)
 {
-  printf ("    %s. Press ENTER: ", p) ;
-  (void)getchar () ;
+    printf("    %s. Press ENTER: ", p);
+    (void)getchar();
 }
-
 
 /*
  * the works
  *********************************************************************************
  */
-
-int main (void)
+int
+main(void)
 {
-  int x, y ;
+    int x, y;
 
-  printf ("\n") ;
-  printf ("Scroll Phat Test program\n") ;
-  printf ("========================\n") ;
+    printf("\n");
+    printf("Scroll Phat Test program\n");
+    printf("========================\n");
 
-  if (scrollPhatSetup () != 0)
-  {
-    printf ("Unable to initialise the scrollPhat: %s\n", strerror (errno)) ;
-    exit (1) ;
-  }
+    if (scrollPhatSetup() != 0)
+    {
+        printf("Unable to initialise the scrollPhat: %s\n", strerror(errno));
+        exit(1);
+    }
 
-  printf ("-> Scroll Phat initialised OK\n") ;
-  printf ("... Basic display tests.\n\n") ;
+    printf("-> Scroll Phat initialised OK\n");
+    printf("... Basic display tests.\n\n");
 
-  prompt ("Display ought to be blank") ;
+    prompt("Display ought to be blank");
 
-// Light all pixels using one point at a time
+    // Light all pixels using one point at a time
 
-  for (y = 0 ; y < 5 ; ++y)
-    for (x = 0 ; x < 12 ; ++x)
-      scrollPhatPoint (x, y, 1) ;
-  scrollPhatUpdate () ;
+    for (y = 0; y < 5; ++y)
+    {
+        for (x = 0; x < 12; ++x)
+        {
+            scrollPhatPoint(x, y, 1);
+        }
+    }
+    scrollPhatUpdate();
 
-  prompt ("Display ought to be all lit-up") ;
+    prompt("Display ought to be all lit-up");
 
-// Big rectangle
-  
-  scrollPhatClear () ;
-  scrollPhatRectangle (0,0, 10, 4, 1, 0) ;
-  scrollPhatUpdate () ;
+    // Big rectangle
 
-  prompt ("There should now be a rectangle round the outside") ;
+    scrollPhatClear();
+    scrollPhatRectangle(0, 0, 10, 4, 1, 0);
+    scrollPhatUpdate();
 
-  scrollPhatLine (0,0, 10,4, 1) ;
-  scrollPhatLine (0,4, 10,0, 1) ;
-  scrollPhatUpdate () ;
+    prompt("There should now be a rectangle round the outside");
 
-  prompt ("Diagonal lines") ;
+    scrollPhatLine(0, 0, 10, 4, 1);
+    scrollPhatLine(0, 4, 10, 0, 1);
+    scrollPhatUpdate();
 
-  scrollPhatIntensity (1) ;
+    prompt("Diagonal lines");
 
-  prompt ("Minimum brightness") ;
-  
-  scrollPhatIntensity (100) ;
+    scrollPhatIntensity(1);
 
-  prompt ("Maximum brightness") ;
-  
-  scrollPhatIntensity (10) ;
+    prompt("Minimum brightness");
 
-  prompt ("Default brightness") ;
-  
-  scrollPhatClear () ;
-  
-  printf ("    Message Test...Press Ctrl-C to exit: ") ;
-  fflush (stdout) ;
+    scrollPhatIntensity(100);
 
-  scrollPhatPrintSpeed (75) ;
-  for (;;)
-    scrollPhatPuts ("  Welcome to the scroll phat from Pimoroni  ") ;
-  
-  return 0 ;
+    prompt("Maximum brightness");
+
+    scrollPhatIntensity(10);
+
+    prompt("Default brightness");
+
+    scrollPhatClear();
+
+    printf("    Message Test...Press Ctrl-C to exit: ");
+    fflush(stdout);
+
+    scrollPhatPrintSpeed(75);
+    for (;;)
+    {
+        scrollPhatPuts("  Welcome to the scroll phat from Pimoroni  ");
+    }
+
+    return 0;
 }

@@ -326,6 +326,7 @@ setupServer(int serverPort)
             serverSockAddr.sin6.sin6_family = AF_INET6;
             serverSockAddr.sin6.sin6_addr   = in6addr_any;
             serverSockAddr.sin6.sin6_port   = htons(serverPort);
+            break;
     }
 
     // Bind, listen and accept

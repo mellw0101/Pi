@@ -40,7 +40,6 @@
  *	port parameters - or as many as are required - hopefully!
  *********************************************************************************
  */
-
 int
 serialOpen(const char *device, const int baud)
 {
@@ -190,7 +189,6 @@ serialOpen(const char *device, const int baud)
  *	Flush the serial buffers (both tx & rx)
  *********************************************************************************
  */
-
 void
 serialFlush(const int fd)
 {
@@ -202,7 +200,6 @@ serialFlush(const int fd)
  *	Release the serial port
  *********************************************************************************
  */
-
 void
 serialClose(const int fd)
 {
@@ -214,7 +211,6 @@ serialClose(const int fd)
  *	Send a single character to the serial port
  *********************************************************************************
  */
-
 void
 serialPutchar(const int fd, const unsigned char c)
 {
@@ -230,7 +226,6 @@ serialPutchar(const int fd, const unsigned char c)
  *	Send a string to the serial port
  *********************************************************************************
  */
-
 void
 serialPuts(const int fd, const char *s)
 {
@@ -247,7 +242,6 @@ serialPuts(const int fd, const char *s)
  *	Printf over Serial
  *********************************************************************************
  */
-
 void
 serialPrintf(const int fd, const char *message, ...)
 {
@@ -266,7 +260,6 @@ serialPrintf(const int fd, const char *message, ...)
  *	Return the number of bytes of data avalable to be read in the serial port
  *********************************************************************************
  */
-
 int
 serialDataAvail(const int fd)
 {

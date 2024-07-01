@@ -325,7 +325,7 @@ doMode(int argc, char *argv[])
 
     mode = argv[3];
 
-    /**/ if (strcasecmp(mode, "in") == 0)
+    if (strcasecmp(mode, "in") == 0)
     {
         pinMode(pin, INPUT);
     }
@@ -469,7 +469,6 @@ doPadDrive(int argc, char *argv[])
  *	gpio usbp high/low
  *********************************************************************************
  */
-
 static void
 doUsbP(int argc, char *argv[])
 {
@@ -521,7 +520,6 @@ doUsbP(int argc, char *argv[])
  *	Gertboard Write - To the Analog output
  *********************************************************************************
  */
-
 static void
 doGbw(int argc, char *argv[])
 {

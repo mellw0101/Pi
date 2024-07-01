@@ -40,9 +40,9 @@ runRemoteCommands(int fd)
 {
     /* register */ uint32_t pin;
     int                     len;
-    struct drcNetComStruct  cmd;
+    drcNetComStruct         cmd;
 
-    len = sizeof(struct drcNetComStruct);
+    len = sizeof(drcNetComStruct);
 
     if (setsockopt(fd, SOL_SOCKET, SO_RCVLOWAT, (void *)&len, sizeof(len)) < 0)
     {
