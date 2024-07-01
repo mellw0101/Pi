@@ -73,13 +73,15 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "softPwm.h"
-#include "softTone.h"
+#include "../include/softPwm.h"
+#include "../include/softTone.h"
 
 #include "../include/version.h"
 #include "../include/wiringPi.h"
 
 #include "../include/wiringPiLegacy.h"
+
+#include <Mlib/def.h>
 
 // Environment Variables
 
@@ -132,9 +134,10 @@ struct wiringPiNodeStruct *wiringPiNodes = NULL;
 #define RP1_FSEL_NONE_HW 0x1f // default, mask
 
 // RP1 chip (@Pi5) RIO address
-const unsigned int RP1_RIO_OUT = 0x0000;
-const unsigned int RP1_RIO_OE  = (0x0004 / 4);
-const unsigned int RP1_RIO_IN  = (0x0008 / 4);
+const unsigned int RP1_RIO_OUT UNUSED = 0x0000;
+
+const unsigned int RP1_RIO_OE UNUSED = (0x0004 / 4);
+const unsigned int RP1_RIO_IN UNUSED = (0x0008 / 4);
 
 // RP1 chip (@Pi5) RIO offset for set/clear value
 const unsigned int RP1_SET_OFFSET = (0x2000 / 4);
@@ -150,9 +153,9 @@ const unsigned int RP1_STATUS_LEVEL_LOW  = 0x00400000;
 const unsigned int RP1_STATUS_LEVEL_HIGH = 0x00800000;
 const unsigned int RP1_STATUS_LEVEL_MASK = 0x00C00000;
 
-const unsigned int RP1_DEBOUNCE_DEFAULT_VALUE = 4;
-const unsigned int RP1_DEBOUNCE_MASK          = 0x7f;
-const unsigned int RP1_DEBOUNCE_DEFAULT       = (RP1_DEBOUNCE_DEFAULT_VALUE << 5);
+const unsigned int                   RP1_DEBOUNCE_DEFAULT_VALUE = 4;
+const unsigned int RP1_DEBOUNCE_MASK UNUSED                     = 0x7f;
+const unsigned int                   RP1_DEBOUNCE_DEFAULT       = (RP1_DEBOUNCE_DEFAULT_VALUE << 5);
 
 const unsigned int RP1_IRQRESET = 0x10000000;                // CTRL Bit 28
 
@@ -165,12 +168,12 @@ const unsigned int RP1_PAD_DRIVE_MASK     = 0x00000030;
 const unsigned int RP1_INV_PAD_DRIVE_MASK = ~(RP1_PAD_DRIVE_MASK);
 
 // RP1 chip (@Pi5) address
-const unsigned long long RP1_64_BASE_Addr  = 0x1f000d0000;
-const unsigned int       RP1_BASE_Addr     = 0x40000000;
-const unsigned int       RP1_PWM0_Addr     = 0x40098000; // Adress is not mapped to gpiomem device!
-const unsigned int       RP1_IO0_Addr      = 0x400d0000;
-const unsigned int       RP1_SYS_RIO0_Addr = 0x400e0000;
-const unsigned int       RP1_PADS0_Addr    = 0x400f0000;
+const unsigned long long RP1_64_BASE_Addr UNUSED            = 0x1f000d0000;
+const unsigned int                        RP1_BASE_Addr     = 0x40000000;
+const unsigned int                        RP1_PWM0_Addr     = 0x40098000; // Adress is not mapped to gpiomem device!
+const unsigned int                        RP1_IO0_Addr      = 0x400d0000;
+const unsigned int                        RP1_SYS_RIO0_Addr = 0x400e0000;
+const unsigned int                        RP1_PADS0_Addr    = 0x400f0000;
 
 // Access from ARM Running Linux
 //	Taken from Gert/Doms code. Some of this is not in the manual
@@ -185,11 +188,11 @@ const char *gpiomem_RP1      = "/dev/gpiomem0";
 const int   gpiomem_RP1_Size = 0x00030000;
 // PCIe Memory access, static define - maybe needed to detect in future
 // dmesg: rp1 0000:01:00.0: bar1 len 0x400000, start 0x1f00000000, end 0x1f003fffff, flags, 0x40200
-const char          *pciemem_RP1_path   = "/sys/bus/pci/devices/0000:01:00.0";
-const char          *pciemem_RP1        = "/sys/bus/pci/devices/0000:01:00.0/resource1";
-const int            pciemem_RP1_Size   = 0x00400000;
-const unsigned short pciemem_RP1_Ventor = 0x1de4;
-const unsigned short pciemem_RP1_Device = 0x0001;
+const char                             *pciemem_RP1_path = "/sys/bus/pci/devices/0000:01:00.0";
+const char                             *pciemem_RP1      = "/sys/bus/pci/devices/0000:01:00.0/resource1";
+const int                               pciemem_RP1_Size = 0x00400000;
+const unsigned short pciemem_RP1_Ventor UNUSED           = 0x1de4;
+const unsigned short pciemem_RP1_Device UNUSED           = 0x0001;
 
 static volatile unsigned int GPIO_PADS;
 static volatile unsigned int GPIO_CLOCK_BASE;
