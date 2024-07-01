@@ -342,7 +342,7 @@ setupServer(int serverPort)
         return -1;
     }
 
-    if ((clientFd = accept(serverFd, (struct sockaddr *)&clientSockAddr, &clientSockAddrSize)) <= -1)
+    if ((clientFd = accept(serverFd, (struct sockaddr *)&clientSockAddr, &clientSockAddrSize)) < 0)
     {
         perror("accept");
         return -1;
