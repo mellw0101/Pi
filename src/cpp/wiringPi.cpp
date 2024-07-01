@@ -3706,12 +3706,12 @@ wiringPiSetup()
         }
         else
         {
-            gpio = &base[GPIO_BASE / 4]; // RP1 start adress of map memory for gpio
+            gpio = &base[GPIO_BASE / 4];  // RP1 start adress of map memory for gpio
         }
-        pads = &gpio[GPIO_PADS / 4];     // RP1 start adress of map memory for pads
-        rio  = &gpio[GPIO_RIO / 4];      // RP1 start adress of map memory for rio
-        GPIO_PADS += GPIO_BASE;
-        GPIO_RIO += GPIO_BASE;
+        pads      = &gpio[GPIO_PADS / 4]; // RP1 start adress of map memory for pads
+        rio       = &gpio[GPIO_RIO / 4];  // RP1 start adress of map memory for rio
+        GPIO_PADS = GPIO_PADS + GPIO_BASE;
+        GPIO_RIO  = GPIO_RIO + GPIO_BASE;
 
         // Export the base addresses for any external software that might need them
         _wiringPiBase  = base;
