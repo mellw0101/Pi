@@ -136,25 +136,25 @@ myDigitalRead(wiringPiNodeStruct *node, s32 pin)
     return (serialGetchar(node->fd) == '0') ? 0 : 1;
 }
 
-/*
- * drcSetup:
- *	Create a new instance of an DRC GPIO interface.
- *	Could be a variable nunber of pins here - we might not know in advance
- *	if it's an ATmega with 14 pins, or something with less or more!
- *********************************************************************************
- */
-
-int
-drcSetupSerial(const int pinBase, const int numPins, const char *device, const int baud)
+//
+//  drcSetup:
+//      Create a new instance of an DRC GPIO interface.
+//      Could be a variable nunber of pins here - we might not know in advance
+//      if it's an ATmega with 14 pins, or something with less or more!
+//  *********************************************************************************
+//
+s32
+drcSetupSerial(const s32 pinBase, const s32 numPins, const s8 *device, const s32 baud)
 {
-    int                        fd;
-    int                        ok, tries;
-    time_t                     then;
-    struct wiringPiNodeStruct *node;
+    int    fd;
+    int    ok, tries;
+    time_t then;
+
+    wiringPiNodeStruct *node;
 
     if ((fd = serialOpen(device, baud)) < 0)
     {
-        return FALSE;
+        return false;
     }
 
     delay(10); // May need longer if it's an Uno that reboots on the open...

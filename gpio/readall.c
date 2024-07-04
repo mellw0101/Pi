@@ -141,7 +141,7 @@ readallPhys(int physPin)
     }
     else
     {
-        /**/ if (wpMode == WPI_MODE_GPIO)
+        if (wpMode == WPI_MODE_GPIO)
         {
             pin = physPinToGpio(physPin);
         }
@@ -172,7 +172,7 @@ readallPhys(int physPin)
     }
     else
     {
-        /**/ if (wpMode == WPI_MODE_GPIO)
+        if (wpMode == WPI_MODE_GPIO)
         {
             pin = physPinToGpio(physPin);
         }
@@ -290,7 +290,7 @@ abReadall(int model, int rev)
 static void
 plus2header(int model)
 {
-    /**/ if (model == PI_MODEL_AP)
+    if (model == PI_MODEL_AP)
     {
         printf(" +-----+-----+---------+------+---+---Pi A+--+---+------+---------+-----+-----+\n");
     }
@@ -383,7 +383,7 @@ doReadall(void)
 
     piBoardId(&model, &rev, &mem, &maker, &overVolted);
 
-    /**/ if ((model == PI_MODEL_A) || (model == PI_MODEL_B))
+    if ((model == PI_MODEL_A) || (model == PI_MODEL_B))
     {
         abReadall(model, rev);
     }

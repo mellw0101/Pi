@@ -21,7 +21,7 @@
  */
 
 #include <cstdarg>
-#include <cstdint>
+// #include <cstdint>
 #include <cstdio>
 // #include <cstdlib>
 #include <cstring>
@@ -72,86 +72,139 @@ serialOpen(C_s8 *device, C_s32 baud)
             break;
         }
         case 150 :
+        {
             myBaud = B150;
             break;
+        }
         case 200 :
+        {
             myBaud = B200;
             break;
+        }
         case 300 :
+        {
             myBaud = B300;
             break;
+        }
         case 600 :
+        {
             myBaud = B600;
             break;
+        }
         case 1200 :
+        {
             myBaud = B1200;
             break;
+        }
         case 1800 :
+        {
             myBaud = B1800;
             break;
+        }
         case 2400 :
+        {
             myBaud = B2400;
             break;
+        }
         case 4800 :
+        {
             myBaud = B4800;
             break;
+        }
         case 9600 :
+        {
             myBaud = B9600;
             break;
+        }
         case 19200 :
+        {
             myBaud = B19200;
             break;
+        }
         case 38400 :
+        {
             myBaud = B38400;
             break;
+        }
         case 57600 :
+        {
             myBaud = B57600;
             break;
+        }
         case 115200 :
+        {
             myBaud = B115200;
             break;
+        }
         case 230400 :
+        {
             myBaud = B230400;
             break;
+        }
         case 460800 :
+        {
             myBaud = B460800;
             break;
+        }
         case 500000 :
+        {
             myBaud = B500000;
             break;
+        }
         case 576000 :
+        {
             myBaud = B576000;
             break;
+        }
         case 921600 :
+        {
             myBaud = B921600;
             break;
+        }
         case 1000000 :
+        {
             myBaud = B1000000;
             break;
+        }
         case 1152000 :
+        {
             myBaud = B1152000;
             break;
+        }
         case 1500000 :
+        {
             myBaud = B1500000;
             break;
+        }
         case 2000000 :
+        {
             myBaud = B2000000;
             break;
+        }
         case 2500000 :
+        {
             myBaud = B2500000;
             break;
+        }
         case 3000000 :
+        {
             myBaud = B3000000;
             break;
+        }
         case 3500000 :
+        {
             myBaud = B3500000;
             break;
+        }
         case 4000000 :
+        {
             myBaud = B4000000;
             break;
-
+        }
         default :
+        {
             return -2;
+        }
     }
 
     if ((fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK)) == -1)
@@ -194,37 +247,37 @@ serialOpen(C_s8 *device, C_s32 baud)
     return fd;
 }
 
-/*
- * serialFlush:
- *	Flush the serial buffers (both tx & rx)
- *********************************************************************************
- */
+//
+//  serialFlush:
+//      Flush the serial buffers (both tx & rx)
+//  *********************************************************************************
+//
 void
 serialFlush(C_s32 fd)
 {
     tcflush(fd, TCIOFLUSH);
 }
 
-/*
- * serialClose:
- *	Release the serial port
- *********************************************************************************
- */
+//
+//  serialClose:
+//	    Release the serial port
+//  *********************************************************************************
+//
 void
-serialClose(C_s32 fd)
+serialClose(const s32 fd)
 {
     close(fd);
 }
 
-/*
- * serialPutchar:
- *	Send a single character to the serial port
- *********************************************************************************
- */
+//
+//  serialPutchar:
+//      Send a single character to the serial port
+//  *********************************************************************************
+//
 void
-serialPutchar(C_s32 fd, C_u8 c)
+serialPutchar(const s32 fd, const u8 c)
 {
-    s64 bytes_written = write(fd, &c, 1);
+    const s64 bytes_written = write(fd, &c, 1);
     if (bytes_written != 1)
     {
         perror("Error writing to file descriptor");
@@ -265,15 +318,15 @@ serialPrintf(const int fd, const char *message, ...)
     serialPuts(fd, buffer);
 }
 
-/*
- * serialDataAvail:
- *	Return the number of bytes of data avalable to be read in the serial port
- *********************************************************************************
- */
-int
-serialDataAvail(const int fd)
+//
+//  serialDataAvail:
+//      Return the number of bytes of data avalable to be read in the serial port
+//  *********************************************************************************
+//
+s32
+serialDataAvail(C_s32 fd)
 {
-    int result;
+    s32 result;
 
     if (ioctl(fd, FIONREAD, &result) == -1)
     {
@@ -283,22 +336,22 @@ serialDataAvail(const int fd)
     return result;
 }
 
-/*
- * serialGetchar:
- *	Get a single character from the serial device.
- *	Note: Zero is a valid character and this function will time-out after
- *	10 seconds.
- *********************************************************************************
- */
-int
-serialGetchar(const int fd)
+//
+//  serialGetchar:
+//      Get a single character from the serial device.
+//      Note: Zero is a valid character and this function will time-out after
+//      10 seconds.
+//  *********************************************************************************
+//
+s32
+serialGetchar(C_s32 fd)
 {
-    uint8_t x;
+    u8 x;
 
     if (read(fd, &x, 1) != 1)
     {
         return -1;
     }
 
-    return ((int)x) & 0xFF;
+    return ((s32)x) & 0xFF;
 }

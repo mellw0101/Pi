@@ -23,11 +23,11 @@
  */
 
 #include <arpa/inet.h>
+#include <cerrno>
 #include <crypt.h>
-#include <errno.h>
+#include <cstdio>
+#include <cstring>
 #include <netdb.h>
-#include <stdio.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -109,11 +109,11 @@ getChallenge(s32 fd)
 static s32
 authenticate(s32 fd, C_s8 *pass)
 {
-    char *challenge;
-    char *encrypted;
-    char  salted[1024];
+    s8 *challenge;
+    s8 *encrypted;
+    s8  salted[1024];
 
-    if ((challenge = getChallenge(fd)) == NULL)
+    if ((challenge = getChallenge(fd)) == nullptr)
     {
         return -1;
     }
@@ -121,9 +121,9 @@ authenticate(s32 fd, C_s8 *pass)
     sprintf(salted, "$6$%s$", challenge);
     encrypted = crypt(pass, salted);
 
-    // This is an assertion, or sanity check on my part...
-    //	The '20' comes from the $6$ then the 16 characters of the salt,
-    //	then the terminating $.
+    //  This is an assertion, or sanity check on my part...
+    //	    The '20' comes from the $6$ then the 16 characters of the salt,
+    //	    then the terminating $.
 
     if (strncmp(encrypted, salted, 20) != 0)
     {
@@ -143,22 +143,22 @@ authenticate(s32 fd, C_s8 *pass)
     }
 }
 
-/*
- * _drcSetupNet:
- *	Do the hard work of establishing a network connection and authenticating
- *	the password.
- *********************************************************************************
- */
-int
+//
+//  _drcSetupNet:
+//      Do the hard work of establishing a network connection and authenticating
+//      the password.
+//  *********************************************************************************
+//
+s32
 _drcSetupNet(C_s8 *ipAddress, C_s8 *port, C_s8 *password)
 {
-    struct addrinfo  hints;
-    struct addrinfo *result, *rp;
-    struct in6_addr  serveraddr;
-    int              remoteFd;
+    addrinfo  hints;
+    addrinfo *result, *rp;
+    in6_addr  serveraddr;
+    s32       remoteFd;
 
-    // Start by seeing if we've been given a (textual) numeric IP address
-    //	which will save lookups in getaddrinfo()
+    //  Start by seeing if we've been given a (textual) numeric IP address
+    //	    which will save lookups in getaddrinfo()
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_flags    = AI_NUMERICSERV;
@@ -217,15 +217,15 @@ _drcSetupNet(C_s8 *ipAddress, C_s8 *port, C_s8 *password)
     return -1;            // Nothing connected
 }
 
-/*
- * myPinMode:
- *	Change the pin mode on the remote DRC device
- *********************************************************************************
- */
+//
+//  myPinMode:
+//      Change the pin mode on the remote DRC device
+//  *********************************************************************************
+//
 static void
-myPinMode(struct wiringPiNodeStruct *node, int pin, int mode)
+myPinMode(wiringPiNodeStruct *node, s32 pin, s32 mode)
 {
-    struct drcNetComStruct cmd;
+    drcNetComStruct cmd;
 
     cmd.pin  = pin - node->pinBase;
     cmd.cmd  = DRCN_PIN_MODE;
@@ -240,7 +240,7 @@ myPinMode(struct wiringPiNodeStruct *node, int pin, int mode)
  *********************************************************************************
  */
 static void
-myPullUpDnControl(struct wiringPiNodeStruct *node, int pin, int mode)
+myPullUpDnControl(wiringPiNodeStruct *node, int pin, int mode)
 {
     struct drcNetComStruct cmd;
 
