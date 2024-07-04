@@ -22,23 +22,22 @@
  ***********************************************************************
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
 
-#include "wiringPi.h"
-#include "wiringSerial.h"
+#include "../include/wiringPi.h"
+#include "../include/wiringSerial.h"
 
-#include "drcSerial.h"
+#include "../include/drcSerial.h"
 
-/*
- * myPinMode:
- *	Change the pin mode on the remote DRC device
- *********************************************************************************
- */
-
+//
+//  myPinMode:
+//	 Change the pin mode on the remote DRC device
+//  *********************************************************************************
+//
 static void
-myPinMode(struct wiringPiNodeStruct *node, int pin, int mode)
+myPinMode(wiringPiNodeStruct *node, s32 pin, s32 mode)
 {
     if (mode == OUTPUT)
     {
@@ -56,14 +55,13 @@ myPinMode(struct wiringPiNodeStruct *node, int pin, int mode)
     serialPutchar(node->fd, pin - node->pinBase);
 }
 
-/*
- * myPullUpDnControl:
- *	ATmegas only have pull-up's on of off. No pull-downs.
- *********************************************************************************
- */
-
+//
+//  myPullUpDnControl:
+//  	ATmegas only have pull-up's on of off. No pull-downs.
+//  *********************************************************************************
+//
 static void
-myPullUpDnControl(struct wiringPiNodeStruct *node, int pin, int mode)
+myPullUpDnControl(wiringPiNodeStruct *node, s32 pin, s32 mode)
 {
 
     // Force pin into input mode
@@ -83,40 +81,37 @@ myPullUpDnControl(struct wiringPiNodeStruct *node, int pin, int mode)
     }
 }
 
-/*
- * myDigitalWrite:
- *********************************************************************************
- */
-
+//
+//  myDigitalWrite:
+//  *********************************************************************************
+//
 static void
-myDigitalWrite(struct wiringPiNodeStruct *node, int pin, int value)
+myDigitalWrite(wiringPiNodeStruct *node, s32 pin, s32 value)
 {
     serialPutchar(node->fd, value == 0 ? '0' : '1');
     serialPutchar(node->fd, pin - node->pinBase);
 }
 
-/*
- * myPwmWrite:
- *********************************************************************************
- */
-
+//
+//  myPwmWrite:
+//  *********************************************************************************
+//
 static void
-myPwmWrite(struct wiringPiNodeStruct *node, int pin, int value)
+myPwmWrite(wiringPiNodeStruct *node, s32 pin, s32 value)
 {
     serialPutchar(node->fd, 'v');
     serialPutchar(node->fd, pin - node->pinBase);
     serialPutchar(node->fd, value & 0xFF);
 }
 
-/*
- * myAnalogRead:
- *********************************************************************************
- */
-
-static int
-myAnalogRead(struct wiringPiNodeStruct *node, int pin)
+//
+//  myAnalogRead:
+//  *********************************************************************************
+//
+static s32
+myAnalogRead(wiringPiNodeStruct *node, s32 pin)
 {
-    int vHi, vLo;
+    s32 vHi, vLo;
 
     serialPutchar(node->fd, 'a');
     serialPutchar(node->fd, pin - node->pinBase);
@@ -126,15 +121,17 @@ myAnalogRead(struct wiringPiNodeStruct *node, int pin)
     return (vHi << 8) | vLo;
 }
 
-/*
- * myDigitalRead:
- *********************************************************************************
- */
-
-static int
-myDigitalRead(struct wiringPiNodeStruct *node, int pin)
+//
+//  myDigitalRead:
+//  *********************************************************************************
+//
+static s32
+myDigitalRead(wiringPiNodeStruct *node, s32 pin)
 {
-    serialPutchar(node->fd, 'r'); // Send read command
+    //
+    //  Send read command
+    //
+    serialPutchar(node->fd, 'r');
     serialPutchar(node->fd, pin - node->pinBase);
     return (serialGetchar(node->fd) == '0') ? 0 : 1;
 }

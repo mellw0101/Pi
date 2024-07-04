@@ -20,47 +20,57 @@
  ***********************************************************************
  */
 
+#include <cstdarg>
+#include <cstdint>
+#include <cstdio>
+// #include <cstdlib>
+#include <cstring>
 #include <fcntl.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
 
+#include <Mlib/def.h>
+
 #include "../include/wiringSerial.h"
 
-/*
- * serialOpen:
- *	Open and initialise the serial port, setting all the right
- *	port parameters - or as many as are required - hopefully!
- *********************************************************************************
- */
-int
-serialOpen(const char *device, const int baud)
+//
+//  serialOpen:
+//  	Open and initialise the serial port, setting all the right
+//  	port parameters - or as many as are required - hopefully!
+//  *********************************************************************************
+//
+s32
+serialOpen(C_s8 *device, C_s32 baud)
 {
-    struct termios options;
-    speed_t        myBaud;
-    int            status, fd;
+    termios options;
+    speed_t myBaud;
+    s32     status, fd;
 
     switch (baud)
     {
         case 50 :
+        {
             myBaud = B50;
             break;
+        }
         case 75 :
+        {
             myBaud = B75;
             break;
+        }
         case 110 :
+        {
             myBaud = B110;
             break;
+        }
         case 134 :
+        {
             myBaud = B134;
             break;
+        }
         case 150 :
             myBaud = B150;
             break;
@@ -190,7 +200,7 @@ serialOpen(const char *device, const int baud)
  *********************************************************************************
  */
 void
-serialFlush(const int fd)
+serialFlush(C_s32 fd)
 {
     tcflush(fd, TCIOFLUSH);
 }
@@ -201,7 +211,7 @@ serialFlush(const int fd)
  *********************************************************************************
  */
 void
-serialClose(const int fd)
+serialClose(C_s32 fd)
 {
     close(fd);
 }
@@ -212,26 +222,26 @@ serialClose(const int fd)
  *********************************************************************************
  */
 void
-serialPutchar(const int fd, const unsigned char c)
+serialPutchar(C_s32 fd, C_u8 c)
 {
-    ssize_t bytes_written = write(fd, &c, 1);
+    s64 bytes_written = write(fd, &c, 1);
     if (bytes_written != 1)
     {
         perror("Error writing to file descriptor");
     }
 }
 
-/*
- * serialPuts:
- *	Send a string to the serial port
- *********************************************************************************
- */
+//
+//  serialPuts:
+// 	    Send a string to the serial port
+//  *********************************************************************************
+//
 void
-serialPuts(const int fd, const char *s)
+serialPuts(C_s32 fd, C_s8 *s)
 {
-    size_t  len           = strlen(s);
-    ssize_t bytes_written = write(fd, s, len);
-    if (bytes_written != (ssize_t)len)
+    u64 len           = strlen(s);
+    s64 bytes_written = write(fd, s, len);
+    if (bytes_written != (s64)len)
     {
         perror("Error writing to file descriptor");
     }

@@ -308,9 +308,9 @@ myAnalogWrite(struct wiringPiNodeStruct *node, int pin, int value)
  *********************************************************************************
  */
 static void
-myPwmWrite(struct wiringPiNodeStruct *node, int pin, int value)
+myPwmWrite(wiringPiNodeStruct *node, s32 pin, s32 value)
 {
-    struct drcNetComStruct cmd;
+    drcNetComStruct cmd;
 
     cmd.pin  = pin - node->pinBase;
     cmd.cmd  = DRCN_PWM_WRITE;
@@ -384,22 +384,23 @@ static unsigned int myDigitalRead8 (struct wiringPiNodeStruct *node, int pin)
  *	Could be a variable nunber of pins here - we might not know in advance.
  *********************************************************************************
  */
-int
-drcSetupNet(const int pinBase, const int numPins, const char *ipAddress, const char *port, const char *password)
+s32
+drcSetupNet(C_s32 pinBase, C_s32 numPins, C_s8 *ipAddress, C_s8 *port, C_s8 *password)
 {
-    int                        fd, len;
-    struct wiringPiNodeStruct *node;
+    s32 fd, len;
+
+    wiringPiNodeStruct *node;
 
     if ((fd = _drcSetupNet(ipAddress, port, password)) < 0)
     {
-        return FALSE;
+        return false;
     }
 
-    len = sizeof(struct drcNetComStruct);
+    len = sizeof(drcNetComStruct);
 
     if (setsockopt(fd, SOL_SOCKET, SO_RCVLOWAT, (void *)&len, sizeof(len)) < 0)
     {
-        return FALSE;
+        return false;
     }
 
     node = wiringPiNewNode(pinBase, numPins);
@@ -416,5 +417,5 @@ drcSetupNet(const int pinBase, const int numPins, const char *ipAddress, const c
     // node->digitalWrite8    = myDigitalWrite8 ;
     node->pwmWrite = myPwmWrite;
 
-    return TRUE;
+    return true;
 }
