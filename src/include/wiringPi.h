@@ -24,6 +24,8 @@
 #ifndef __WIRING_PI_H__
 #define __WIRING_PI_H__
 
+#include <Mlib/def.h>
+
 // C doesn't have true/false by default and I can never remember which
 //	way round they are, so ...
 //	(and yes, I know about stdbool.h but I like capitals for these and I'm old)
@@ -309,7 +311,5 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
-
-#include <Mlib/def.h>
 
 #endif

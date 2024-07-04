@@ -233,7 +233,7 @@ serialPutchar(C_s32 fd, C_u8 c)
 
 //
 //  serialPuts:
-// 	    Send a string to the serial port
+// 	    Send a string to the serial port.
 //  *********************************************************************************
 //
 void

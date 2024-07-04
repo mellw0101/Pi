@@ -38,18 +38,18 @@
 
 #include <Mlib/def.h>
 
-/*
- * remoteReadline:
- *	Read in a line of data from the remote server, ending with a newline
- *	character which is not stored. Returns the length or < 0 on
- *	any sort of failure.
- *********************************************************************************
- */
+//
+//  remoteReadline:
+//	    Read in a line of data from the remote server, ending with a newline
+//	    character which is not stored. Returns the length or < 0 on
+//	    any sort of failure.
+//  *********************************************************************************
+//
 static s32
 remoteReadline(s32 fd, s8 *buf, s32 max)
 {
-    int  len = 0;
-    char c;
+    s32 len = 0;
+    s8  c;
 
     for (;;)
     {
@@ -291,9 +291,9 @@ static void myDigitalWrite8 (struct wiringPiNodeStruct *node, int pin, int value
  *********************************************************************************
  */
 static void
-myAnalogWrite(struct wiringPiNodeStruct *node, int pin, int value)
+myAnalogWrite(wiringPiNodeStruct *node, s32 pin, s32 value)
 {
-    struct drcNetComStruct cmd;
+    drcNetComStruct cmd;
 
     cmd.pin  = pin - node->pinBase;
     cmd.cmd  = DRCN_ANALOG_WRITE;
@@ -324,8 +324,8 @@ myPwmWrite(wiringPiNodeStruct *node, s32 pin, s32 value)
  * myAnalogRead:
  *********************************************************************************
  */
-static int
-myAnalogRead(struct wiringPiNodeStruct *node, int pin)
+static s32
+myAnalogRead(wiringPiNodeStruct *node, s32 pin)
 {
     struct drcNetComStruct cmd;
 
@@ -339,15 +339,14 @@ myAnalogRead(struct wiringPiNodeStruct *node, int pin)
     return cmd.data;
 }
 
-/*
- * myDigitalRead:
- *********************************************************************************
- */
-
-static int
-myDigitalRead(wiringPiNodeStruct *node, int pin)
+//
+//  myDigitalRead:
+//  ********************************************************************************
+//
+static s32
+myDigitalRead(wiringPiNodeStruct *node, s32 pin)
 {
-    struct drcNetComStruct cmd;
+    drcNetComStruct cmd;
 
     cmd.pin  = pin - node->pinBase;
     cmd.cmd  = DRCN_DIGITAL_READ;
@@ -378,12 +377,12 @@ static unsigned int myDigitalRead8 (struct wiringPiNodeStruct *node, int pin)
 }
  */
 
-/*
- * drcNet:
- *	Create a new instance of an DRC GPIO interface.
- *	Could be a variable nunber of pins here - we might not know in advance.
- *********************************************************************************
- */
+//
+//  drcNet:
+// 	    Create a new instance of an DRC GPIO interface.
+// 	    Could be a variable nunber of pins here - we might not know in advance.
+//  *********************************************************************************
+//
 s32
 drcSetupNet(C_s32 pinBase, C_s32 numPins, C_s8 *ipAddress, C_s8 *port, C_s8 *password)
 {
