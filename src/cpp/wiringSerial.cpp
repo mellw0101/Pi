@@ -290,7 +290,7 @@ serialPutchar(const s32 fd, const u8 c)
 //  *********************************************************************************
 //
 void
-serialPuts(C_s32 fd, C_s8 *s)
+serialPuts(const s32 fd, const s8 *s)
 {
     u64 len           = strlen(s);
     s64 bytes_written = write(fd, s, len);
@@ -300,16 +300,17 @@ serialPuts(C_s32 fd, C_s8 *s)
     }
 }
 
-/*
- * serialPrintf:
- *	Printf over Serial
- *********************************************************************************
- */
+//
+//  serialPrintf:
+//      Printf over Serial
+//  *********************************************************************************
+//
 void
-serialPrintf(const int fd, const char *message, ...)
+serialPrintf(C_s32 fd, C_s8 *message, ...)
 {
     va_list argp;
-    char    buffer[1024];
+
+    s8 buffer[1024];
 
     va_start(argp, message);
     vsnprintf(buffer, 1023, message, argp);
